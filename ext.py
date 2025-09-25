@@ -6,7 +6,7 @@ from sklearn.metrics import classification_report, accuracy_score
 from imblearn.under_sampling import RandomUnderSampler
 #from imblearn.over_sampling import SMOTE
 
-pickle_file_path = r"C:/Users/alsti/Desktop/Coding Projects/Main Project AJCE- Stress Level Classification/archive/WESAD/S8/S8.pkl"
+pickle_file_path = r"file path.pkl"
 
 
 data = pd.read_pickle(pickle_file_path)
