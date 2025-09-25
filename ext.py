@@ -8,7 +8,7 @@ from imblearn.under_sampling import RandomUnderSampler
 from sklearn.metrics import confusion_matrix, classification_report
 
 
-pickle_file_path = r"C:/Users/alsti/Desktop/Coding Projects/Main Project AJCE- Stress Level Classification/archive/WESAD/S8/S8.pkl"
+pickle_file_path = r"S8.pkl"
 
 
 data = pd.read_pickle(pickle_file_path)
