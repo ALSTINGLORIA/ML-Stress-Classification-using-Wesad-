@@ -1,12 +1,14 @@
 import numpy as np
+import joblib
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
 from imblearn.under_sampling import RandomUnderSampler
-#from imblearn.over_sampling import SMOTE
+from sklearn.metrics import confusion_matrix, classification_report
 
-pickle_file_path = r"file path.pkl"
+
+pickle_file_path = r"C:/Users/alsti/Desktop/Coding Projects/Main Project AJCE- Stress Level Classification/archive/WESAD/S8/S8.pkl"
 
 
 data = pd.read_pickle(pickle_file_path)
@@ -128,14 +130,29 @@ undersampler = RandomUnderSampler(sampling_strategy='auto', random_state=42)
 X_train_resampled, y_train_resampled = undersampler.fit_resample(X_train, y_train)
 model = RandomForestClassifier(n_estimators=20, random_state=42,class_weight='balanced')
 model.fit(X_train_resampled, y_train_resampled)
-# model.fit(X_train, y_train)
 
 
 y_pred = model.predict(X_test)
 
-accuracy = accuracy_score(y_test, y_pred)
-print(f"Accuracy: {accuracy:.2f}")
+cm = confusion_matrix(y_test, y_pred)
+
+print("\nConfusion Matrix:")
+print(cm)
+
 
 print("\nClassification Report:")
 print(classification_report(y_test, y_pred))
 
+
+report = classification_report(y_test, y_pred, output_dict=True)
+
+print("\nMetrics per Class:")
+for label in report:
+    if label != 'accuracy':
+        print(f"Class {label}: Precision = {report[label]['precision']:.2f}, "
+              f"Recall = {report[label]['recall']:.2f}, "
+              f"F1-Score = {report[label]['f1-score']:.2f}")
+
+model_filename = "trained_random_forest_model.pkl"
+joblib.dump(model, model_filename)
+print(f"Model saved to {model_filename}")
