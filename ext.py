@@ -6,7 +6,7 @@ from sklearn.metrics import classification_report, accuracy_score
 from imblearn.under_sampling import RandomUnderSampler
 #from imblearn.over_sampling import SMOTE
 
-pickle_file_path = r"file path.pkl"
+pickle_file_path = r"C:/Users/alsti/Desktop/Coding Projects/Main Project AJCE- Stress Level Classification/archive/WESAD/S8/S8.pkl"
 
 
 data = pd.read_pickle(pickle_file_path)
@@ -32,35 +32,35 @@ Columns = ['cecg', 'cemg','ceda','ctemp', 'cresp','cax', 'cay', 'caz', 'label' ]
 ch_df = pd.DataFrame(ch_array, columns = Columns) 
 
 
-stress_data = ch_df[ch_df['label'].isin([1, 2, 3, 4])]
+stress_data = ch_df[ch_df['label'].isin([2])]
 
 
-ecg_30th = np.percentile(ch_df[ch_df['label'] == 2]['cecg'], 30)
+ecg_35th = np.percentile(ch_df[ch_df['label'] == 2]['cecg'], 35)
 ecg_60th = np.percentile(ch_df[ch_df['label'] == 2]['cecg'], 60)
 
-emg_30th = np.percentile(ch_df[ch_df['label'] == 2]['cemg'], 30)
+emg_35th = np.percentile(ch_df[ch_df['label'] == 2]['cemg'], 35)
 emg_60th = np.percentile(ch_df[ch_df['label'] == 2]['cemg'], 60)
 
-eda_30th = np.percentile(ch_df[ch_df['label'] == 2]['ceda'], 30)
+eda_35th = np.percentile(ch_df[ch_df['label'] == 2]['ceda'], 35)
 eda_60th = np.percentile(ch_df[ch_df['label'] == 2]['ceda'], 60)
 
-temp_30th = np.percentile(ch_df[ch_df['label'] == 2]['ctemp'], 30)
+temp_35th = np.percentile(ch_df[ch_df['label'] == 2]['ctemp'], 35)
 temp_60th = np.percentile(ch_df[ch_df['label'] == 2]['ctemp'], 60)
 
-resp_30th = np.percentile(ch_df[ch_df['label'] == 2]['cresp'], 30)
+resp_35th = np.percentile(ch_df[ch_df['label'] == 2]['cresp'], 35)
 resp_60th = np.percentile(ch_df[ch_df['label'] == 2]['cresp'], 60)
 
-cax_30th = np.percentile(ch_df[ch_df['label'] == 2]['cax'], 30)
+cax_35th = np.percentile(ch_df[ch_df['label'] == 2]['cax'], 35)
 cax_60th = np.percentile(ch_df[ch_df['label'] == 2]['cax'], 60)
 
-cay_30th = np.percentile(ch_df[ch_df['label'] == 2]['cay'], 30)
+cay_35th = np.percentile(ch_df[ch_df['label'] == 2]['cay'], 35)
 cay_60th = np.percentile(ch_df[ch_df['label'] == 2]['cay'], 60)
 
-caz_30th = np.percentile(ch_df[ch_df['label'] == 2]['caz'], 30)
+caz_35th = np.percentile(ch_df[ch_df['label'] == 2]['caz'], 35)
 caz_60th = np.percentile(ch_df[ch_df['label'] == 2]['caz'], 60)
 
 classified_data = stress_data.copy()
-classified_data['label'] = classified_data['label'].replace({1: 0, 3: 0, 4: 0})
+# classified_data['label'] = classified_data['label'].replace({1: 0, 3: 0, 4: 0})
 
 def categorize(value, lower_percentile, upper_percentile):
     if value <= lower_percentile:
@@ -77,7 +77,7 @@ def categorize_and_classify(data, features, percentiles):
         temp_categories = []
 
         for feature in features:
-            lower_percentile = percentiles[f"{feature}_30th"]
+            lower_percentile = percentiles[f"{feature}_35th"]
             upper_percentile = percentiles[f"{feature}_60th"]
 
             value = row[feature]
@@ -95,14 +95,14 @@ def categorize_and_classify(data, features, percentiles):
 
 features = ['cecg', 'cemg', 'ceda', 'ctemp', 'cresp', 'cax', 'cay', 'caz']
 percentiles = {
-    'cecg_30th': ecg_30th, 'cecg_60th': ecg_60th,
-    'cemg_30th': emg_30th, 'cemg_60th': emg_60th,
-    'ceda_30th': eda_30th, 'ceda_60th': eda_60th,
-    'ctemp_30th': temp_30th, 'ctemp_60th': temp_60th,
-    'cresp_30th': resp_30th, 'cresp_60th': resp_60th,
-    'cax_30th': cax_30th, 'cax_60th': cax_60th,
-    'cay_30th': cay_30th, 'cay_60th': cay_60th,
-    'caz_30th': caz_30th, 'caz_60th': caz_60th
+    'cecg_35th': ecg_35th, 'cecg_60th': ecg_60th,
+    'cemg_35th': emg_35th, 'cemg_60th': emg_60th,
+    'ceda_35th': eda_35th, 'ceda_60th': eda_60th,
+    'ctemp_35th': temp_35th, 'ctemp_60th': temp_60th,
+    'cresp_35th': resp_35th, 'cresp_60th': resp_60th,
+    'cax_35th': cax_35th, 'cax_60th': cax_60th,
+    'cay_35th': cay_35th, 'cay_60th': cay_60th,
+    'caz_35th': caz_35th, 'caz_60th': caz_60th
 }
 
 
@@ -113,15 +113,6 @@ label_counts = classified_data['label'].value_counts()
 print("Number of entries for each label:")
 print(label_counts)
 
-label_0_count = label_counts.get(0, 0)  
-label_1_count = label_counts.get(1, 0)
-label_2_count = label_counts.get(2, 0)
-label_3_count = label_counts.get(3, 0)
-
-print(f"Label 0: {label_0_count} entries")
-print(f"Label 1: {label_1_count} entries")
-print(f"Label 2: {label_2_count} entries")
-print(f"Label 3: {label_3_count} entries")
 
 
 X = classified_data[['cecg', 'cemg', 'ceda', 'ctemp', 'cresp', 'cax', 'cay', 'caz']] 
