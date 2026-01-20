@@ -7,8 +7,7 @@ from sklearn.metrics import classification_report, accuracy_score
 from imblearn.under_sampling import RandomUnderSampler
 from sklearn.metrics import confusion_matrix, classification_report
 
-
-pickle_file_path = r"S8.pkl"
+pickle_file_path = r"C:/Users/alsti/Desktop/Coding Projects/Main Project AJCE- Stress Level Classification/archive/WESAD/S8/S8.pkl"
 
 
 data = pd.read_pickle(pickle_file_path)
@@ -37,29 +36,29 @@ ch_df = pd.DataFrame(ch_array, columns = Columns)
 stress_data = ch_df[ch_df['label'].isin([2])]
 
 
-ecg_35th = np.percentile(ch_df[ch_df['label'] == 2]['cecg'], 35)
-ecg_60th = np.percentile(ch_df[ch_df['label'] == 2]['cecg'], 60)
+ecg_33th = np.percentile(ch_df[ch_df['label'] == 2]['cecg'], 33)
+ecg_66th = np.percentile(ch_df[ch_df['label'] == 2]['cecg'], 66)
 
-emg_35th = np.percentile(ch_df[ch_df['label'] == 2]['cemg'], 35)
-emg_60th = np.percentile(ch_df[ch_df['label'] == 2]['cemg'], 60)
+emg_33th = np.percentile(ch_df[ch_df['label'] == 2]['cemg'], 33)
+emg_66th = np.percentile(ch_df[ch_df['label'] == 2]['cemg'], 66)
 
-eda_35th = np.percentile(ch_df[ch_df['label'] == 2]['ceda'], 35)
-eda_60th = np.percentile(ch_df[ch_df['label'] == 2]['ceda'], 60)
+eda_33th = np.percentile(ch_df[ch_df['label'] == 2]['ceda'], 33)
+eda_66th = np.percentile(ch_df[ch_df['label'] == 2]['ceda'], 66)
 
-temp_35th = np.percentile(ch_df[ch_df['label'] == 2]['ctemp'], 35)
-temp_60th = np.percentile(ch_df[ch_df['label'] == 2]['ctemp'], 60)
+temp_33th = np.percentile(ch_df[ch_df['label'] == 2]['ctemp'], 33)
+temp_66th = np.percentile(ch_df[ch_df['label'] == 2]['ctemp'], 66)
 
-resp_35th = np.percentile(ch_df[ch_df['label'] == 2]['cresp'], 35)
-resp_60th = np.percentile(ch_df[ch_df['label'] == 2]['cresp'], 60)
+resp_33th = np.percentile(ch_df[ch_df['label'] == 2]['cresp'], 33)
+resp_66th = np.percentile(ch_df[ch_df['label'] == 2]['cresp'], 66)
 
-cax_35th = np.percentile(ch_df[ch_df['label'] == 2]['cax'], 35)
-cax_60th = np.percentile(ch_df[ch_df['label'] == 2]['cax'], 60)
+cax_33th = np.percentile(ch_df[ch_df['label'] == 2]['cax'], 33)
+cax_66th = np.percentile(ch_df[ch_df['label'] == 2]['cax'], 66)
 
-cay_35th = np.percentile(ch_df[ch_df['label'] == 2]['cay'], 35)
-cay_60th = np.percentile(ch_df[ch_df['label'] == 2]['cay'], 60)
+cay_33th = np.percentile(ch_df[ch_df['label'] == 2]['cay'], 33)
+cay_66th = np.percentile(ch_df[ch_df['label'] == 2]['cay'], 66)
 
-caz_35th = np.percentile(ch_df[ch_df['label'] == 2]['caz'], 35)
-caz_60th = np.percentile(ch_df[ch_df['label'] == 2]['caz'], 60)
+caz_33th = np.percentile(ch_df[ch_df['label'] == 2]['caz'], 33)
+caz_66th = np.percentile(ch_df[ch_df['label'] == 2]['caz'], 66)
 
 classified_data = stress_data.copy()
 # classified_data['label'] = classified_data['label'].replace({1: 0, 3: 0, 4: 0})
@@ -72,44 +71,58 @@ def categorize(value, lower_percentile, upper_percentile):
     else:
         return 3  
     
-def categorize_and_classify(data, features, percentiles):
-    classified_data = data.copy()
+feature_weight = {
+    'cay': 0.177044,
+    'cax': 0.164656,
+    'caz': 0.126613,
+    'cecg': 0.118972,
+    'cresp': 0.115870,
+    'ctemp': 0.108665,
+    'ceda': 0.095974,
+    'cemg': 0.092805
+}
 
+
+
+def categorize_and_classify_weighted(data, features, percentiles, feature_importances):
+    classified_data = data.copy()
     for index, row in classified_data[classified_data['label'] == 2].iterrows():
         temp_categories = []
 
         for feature in features:
-            lower_percentile = percentiles[f"{feature}_35th"]
-            upper_percentile = percentiles[f"{feature}_60th"]
+            lower_percentile = percentiles[f"{feature}_33th"]
+            upper_percentile = percentiles[f"{feature}_66th"]
 
             value = row[feature]
-
             category = categorize(value, lower_percentile, upper_percentile)
-            temp_categories.append(category)
 
-        average_category = sum(temp_categories) / len(temp_categories)
+            # Weight the category by the feature's importance
+            weighted_category = category * feature_importances[feature]
+            temp_categories.append(weighted_category)
 
-        new_label = 1 if average_category <= 1.5 else (2 if average_category <= 2.5 else 3)
+        # Compute the weighted average of the categories
+        weighted_average_category = sum(temp_categories) / sum(feature_importances.values())
 
+        # Assign a new label based on the weighted average
+        new_label = 1 if weighted_average_category <= 1.5 else (2 if weighted_average_category <= 2.5 else 3)
         classified_data.at[index, 'label'] = new_label
 
     return classified_data
 
 features = ['cecg', 'cemg', 'ceda', 'ctemp', 'cresp', 'cax', 'cay', 'caz']
 percentiles = {
-    'cecg_35th': ecg_35th, 'cecg_60th': ecg_60th,
-    'cemg_35th': emg_35th, 'cemg_60th': emg_60th,
-    'ceda_35th': eda_35th, 'ceda_60th': eda_60th,
-    'ctemp_35th': temp_35th, 'ctemp_60th': temp_60th,
-    'cresp_35th': resp_35th, 'cresp_60th': resp_60th,
-    'cax_35th': cax_35th, 'cax_60th': cax_60th,
-    'cay_35th': cay_35th, 'cay_60th': cay_60th,
-    'caz_35th': caz_35th, 'caz_60th': caz_60th
+    'cecg_33th': ecg_33th, 'cecg_66th': ecg_66th,
+    'cemg_33th': emg_33th, 'cemg_66th': emg_66th,
+    'ceda_33th': eda_33th, 'ceda_66th': eda_66th,
+    'ctemp_33th': temp_33th, 'ctemp_66th': temp_66th,
+    'cresp_33th': resp_33th, 'cresp_66th': resp_66th,
+    'cax_33th': cax_33th, 'cax_66th': cax_66th,
+    'cay_33th': cay_33th, 'cay_66th': cay_66th,
+    'caz_33th': caz_33th, 'caz_66th': caz_66th
 }
 
 
-classified_data = categorize_and_classify(classified_data, features, percentiles)
-
+classified_data = categorize_and_classify_weighted(classified_data, features, percentiles,feature_weight)
 
 label_counts = classified_data['label'].value_counts()
 print("Number of entries for each label:")
@@ -130,7 +143,6 @@ undersampler = RandomUnderSampler(sampling_strategy='auto', random_state=42)
 X_train_resampled, y_train_resampled = undersampler.fit_resample(X_train, y_train)
 model = RandomForestClassifier(n_estimators=20, random_state=42,class_weight='balanced')
 model.fit(X_train_resampled, y_train_resampled)
-
 
 y_pred = model.predict(X_test)
 
